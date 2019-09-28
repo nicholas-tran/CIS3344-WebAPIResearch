@@ -1,0 +1,33 @@
+﻿body {
+    font-family:Garamond;
+}
+
+img{
+    width:275px;
+    height:175px;
+}
+
+header{
+    background-color: rgb(0, 100, 224);
+
+}
+
+#nav {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+#content{
+    display:flex;
+    flex-flow:row;
+    max-width:40%;
+}
+
+#searchVideo {
+    margin-right: 25px;
+}
+
+#currentVideo {
+    margin-top: 20px;
+}

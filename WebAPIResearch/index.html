@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://code.jquery.com/jquery-3.3.1.js"
+            integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+            crossorigin="anonymous"></script>
+    <link href="indexStyle.css" rel="stylesheet" />
+</head>
+<body>
+    <header>
+        <div id="logo">
+            <img src="img/dailymotionLogo.png" style="height:100px;width:300px" />
+        </div>
+    </header>
+    <br />
+    <div id="nav">
+        Search:
+        <input type="text" id="txtSearch" />
+        <button type="button" id="btnSearch" onclientclick="btnSearch_Click">Search</button>
+        User Video Count:
+        <input type="text" id="txtUser" />
+        <button type="button" id="btnUser" onclientclick="btnUser_Click">Search</button>
+        <p id="user"></p>
+        Count Videos:
+        <input type="text" id="txtCount" />
+        <button type="button" id="btnCount" onclientclick="btnCount_Click">Search</button>
+        <p id="count"></p>
+    </div>
+    <div id="content">
+        <div id="searchVideo">
+
+        </div>
+        <div id="videoPlayer">
+            <div id="title"></div>
+            <iframe id="currentVideo" frameborder="0" width="1280" height="720"
+                    src="//www.dailymotion.com/embed/video/x2m8jpp"
+                    allowfullscreen allow="autoplay"></iframe>
+        </div>
+    </div>
+    <script>
+        var searchUrl = "https://api.dailymotion.com/video/x2m8jpp";
+        $("#title").empty();
+        $.ajax({
+            url: searchUrl,
+            dataType: "json",
+            success: function (data) {
+                var video = data;
+                $("#title").append('<h1>'+video.title+'</h1>');
+                if (data == "") {
+                    $("#title").text("Video has no title");
+                }
+            },
+            error: function (req, status, error) {
+                alert("Error: No results.");
+            }
+        });//End Ajax
+
+        var searchUrl = "https://api.dailymotion.com/videos?fields=id,title,thumbnail_url%&search=popular&page=1&limit=10";
+        $("#searchVideo").empty();
+        $("#searchVideo").append('<h1>Popular Videos</h1>')
+        $.ajax({
+            url: searchUrl,
+            dataType: "json",
+            success: function (data) {
+                var list = data.list;
+                $.each(list, function (index, video) {
+                    //$("#searchVideo").append("<br />" + "<a href=" + "https://www.dailymotion.com/video/" + video.id + ">" + "<img src=" + video.thumbnail_url + ">" + "</a>" + " <br />" + video.title);
+                    $("#searchVideo").append('<br />' + '<img onclick="play(this)" alt="'+video.id+'" src=' + video.thumbnail_url + '>' + ' <br />' + video.title);
+                });
+                if (data.list == "") {
+                    $("#searchVideo").text("Sorry there are no results for " + userInput);
+                }
+            },
+            error: function (req, status, error) {
+                alert("Error: No results.");
+           }
+        });//End Ajax
+
+        function play(video) {
+            $('#currentVideo').prop('src', '//www.dailymotion.com/embed/video/' + video.alt);
+            var searchUrl = "https://api.dailymotion.com/video/" + video.alt;
+            $("#title").empty();
+            $.ajax({
+                url: searchUrl,
+                dataType: "json",
+                success: function (data) {
+                    var video = data;
+                    $("#title").append('<h1>' + video.title + '</h1>');
+                    if (data == "") {
+                        $("#title").text("Video has no title");
+                    }
+                },
+                error: function (req, status, error) {
+                    alert("Error: No results.");
+                }
+            });//End Ajax
+        }
+        function btnSearch_Click() {
+            var search = $('#txtSearch').val().toString();
+            var searchUrl = "https://api.dailymotion.com/videos?fields=id,title,thumbnail_url%&search=" + search + "&page=1&limit=10";
+            $("#searchVideo").empty();
+            $("#searchVideo").append('<h1>Search: ' + search +'</h1>');
+            $.ajax({
+                url: searchUrl,
+                dataType: "json",
+                success: function (data) {
+                    var list = data.list;
+                    $.each(list, function (index, video) {
+                        //$("#searchVideo").append("<br />" + "<a href=" + "https://www.dailymotion.com/video/" + video.id + ">" + "<img src=" + video.thumbnail_url + ">" + "</a>" + " <br />" + video.title);
+                        $("#searchVideo").append('<br />' + '<img onclick="play(this)" alt="' + video.id + '" src=' + video.thumbnail_url + '>' + ' <br />' + video.title);
+                    });
+                    if (data.list == "") {
+                        $("#searchVideo").text("Sorry there are no results for " + userInput);
+                    }
+                },
+                error: function (req, status, error) {
+                    alert("Error: No results.");
+                }
+            });//End Ajax
+        }
+
+        function btnUser_Click() {
+            $('#user').empty();
+            var userInput = $("#txtUser").val().toString();
+            var input = userInput.split(' ').join('');
+            input = input.toLowerCase();
+            var strURL = "https://api.dailymotion.com/user/" + input + "/videos&limit=100";
+            $.ajax({
+                url: strURL,
+                dataType: "json",
+                success: function (data) {
+                    if (data.has_more == true) {
+                        $("#user").text("The user: " + userInput + " has more than 100 videos on Dailymotion");
+                    }
+                    else {
+                        $("#user").text("The user: " + userInput + " has " + data.total + " videos on Dailymotion");
+                    }
+                },
+                error: function (req, status, error) {
+                    alert("Error: " + userInput + " does not exist in dailymotion");
+                }
+            });//End Ajax
+        };
+
+        function btnCount_Click() {
+            var userInput = $("#txtCount").val().toString();
+            var input = userInput.split(' ').join('');
+            input = input.toLowerCase();
+            var strURL = "https://api.dailymotion.com/videos?search=" + input +"&page=1&limit=1";
+            $.ajax({
+                url: strURL,
+                dataType: "json",
+                success: function (data) {
+                    if (data.has_more == true) {
+                        $("#count").text("The search for: " + userInput + " has" + data.total + "results.");
+                    }
+                },
+                error: function (req, status, error) {
+                    alert("Error: No results for " + userInput + ".");
+                }
+            });//End Ajax
+        };
+
+        $(document).ready(
+            function () {
+                $('#btnSearch').on("click", btnSearch_Click);
+                $('#btnUser').on("click", btnUser_Click);
+                $('#btnCount').on("click", btnCount_Click);
+            });
+    </script>
+</body>
+</html>
